@@ -33,6 +33,11 @@ struct ContentView: View {
         return true
     }
     
+    // Initialize timer used to update the random number every 5 seconds
+    @State var timeRemaining = 5
+    @State var timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
+   
+    
     // Function used to update user on their current score
     func scoreUpdate() {
         // Give score update using an overlay
@@ -42,6 +47,7 @@ struct ContentView: View {
         correctTotal = 0
         incorrectTotal = 0
         currentAttempts = 0
+        updateNumber()
     }
     
     // Function used to generate a new number
@@ -49,7 +55,7 @@ struct ContentView: View {
         randomInt = Int.random(in: 1...100)
         
         // If turn has not been taken, increment incorrectTotal and execute takeTurn() function
-        if !answerGiven {
+        if !answerGiven && currentAttempts != 0 {
             incorrectTotal += 1
             takeTurn()
         }
@@ -99,6 +105,19 @@ struct ContentView: View {
             takeTurn()
         }
         
+        // Display time remaining and refresh timer if countdown has reached 0
+        Text("\(timeRemaining)")
+            .onReceive(timer) { _ in
+                if timeRemaining > 0 {
+                    timeRemaining -= 1
+                } else {
+                    timeRemaining = 5
+                    timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
+                    updateNumber()
+                }
+            }
+        
+        // Display result based on user selection
         switch result {
         case .correct:
             Text("✅")
