@@ -9,7 +9,8 @@ import SwiftUI
 
 struct ContentView: View {
     // Random number generator
-    var randomInt: Int = Int.random(in: 1...100)
+    @State var randomInt: Int = Int.random(in: 1...100)
+    @State var answerGiven: Bool = false
     
     // Enum used to store the current result state
     enum Result {
@@ -35,6 +36,7 @@ struct ContentView: View {
     // Function used to update user on their current score
     func scoreUpdate() {
         // Give score update using an overlay
+        // TO BE IMPLEMENTED
         
         // Reset scores and current attempts to 0
         correctTotal = 0
@@ -42,13 +44,20 @@ struct ContentView: View {
         currentAttempts = 0
     }
     
+    // Function used to generate a new number
+    func updateNumber() {
+        randomInt = Int.random(in: 1...100)
+        
+        // If turn has not been taken, increment incorrectTotal and execute takeTurn() function
+        if !answerGiven {
+            incorrectTotal += 1
+            takeTurn()
+        }
+    }
     
-    // Used for monitoring correct and incorrect results
+    // Used for monitoring correct, incorrect results, and current attempts
     @State var correctTotal: Int = 0
     @State var incorrectTotal: Int = 0
-    
-    
-    // Current attempts
     @State var currentAttempts: Int = 0
     
     func takeTurn() {
@@ -58,6 +67,8 @@ struct ContentView: View {
         // Check is currentAttempts is equal to 10
         if currentAttempts == 10 {
             scoreUpdate()
+        } else {
+            updateNumber()
         }
     }
     
