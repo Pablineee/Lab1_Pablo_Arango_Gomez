@@ -35,14 +35,22 @@ struct ContentView: View {
     // Function used to update user on their current score
     func scoreUpdate() {
         // Give score update using an overlay
+        
+        // Reset scores and current attempts to 0
+        correctTotal = 0
+        incorrectTotal = 0
+        currentAttempts = 0
     }
     
     
     // Used for monitoring correct and incorrect results
+    @State var correctTotal: Int = 0
+    @State var incorrectTotal: Int = 0
     
     
     // Current attempts
     @State var currentAttempts: Int = 0
+    
     func takeTurn() {
         // Increment currentAttempts
         currentAttempts += 1
@@ -60,18 +68,24 @@ struct ContentView: View {
         Button("Prime") {
             if isPrime(num: Int(randomInt)) {
                 result = .correct
+                correctTotal += 1
             } else {
                 result = .incorrect
+                incorrectTotal += 1
             }
+            takeTurn()
         }
         
         // Button used for indicating that the number is a Prime number
         Button("Not Prime") {
             if !isPrime(num: Int(randomInt)) {
                 result = .correct
+                correctTotal += 1
             } else {
                 result = .incorrect
+                incorrectTotal += 1
             }
+            takeTurn()
         }
         
         switch result {
