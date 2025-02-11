@@ -12,6 +12,11 @@ struct ContentView: View {
     @State var randomInt: Int = Int.random(in: 1...100)
     @State var answerGiven: Bool = false
     
+    // Used for monitoring correct, incorrect results, and current attempts
+    @State var correctTotal: Int = 0
+    @State var incorrectTotal: Int = 0
+    @State var currentAttempts: Int = 0
+    
     // Enum used to store the current result state
     enum Result {
         case correct, incorrect, pending
@@ -53,6 +58,7 @@ struct ContentView: View {
     // Function used to generate a new number
     func updateNumber() {
         randomInt = Int.random(in: 1...100)
+        answerGiven = false
         
         // If turn has not been taken, increment incorrectTotal and execute takeTurn() function
         if !answerGiven && currentAttempts != 0 {
@@ -61,14 +67,10 @@ struct ContentView: View {
         }
     }
     
-    // Used for monitoring correct, incorrect results, and current attempts
-    @State var correctTotal: Int = 0
-    @State var incorrectTotal: Int = 0
-    @State var currentAttempts: Int = 0
-    
     func takeTurn() {
         // Increment currentAttempts
         currentAttempts += 1
+        timeRemaining = 5
         
         // Check is currentAttempts is equal to 10
         if currentAttempts == 10 {
@@ -83,6 +85,7 @@ struct ContentView: View {
         
         // Button used for indicating that the number is a Prime number
         Button("Prime") {
+            answerGiven = true
             if isPrime(num: Int(randomInt)) {
                 result = .correct
                 correctTotal += 1
@@ -95,6 +98,7 @@ struct ContentView: View {
         
         // Button used for indicating that the number is a Prime number
         Button("Not Prime") {
+            answerGiven = true
             if !isPrime(num: Int(randomInt)) {
                 result = .correct
                 correctTotal += 1
@@ -105,12 +109,12 @@ struct ContentView: View {
             takeTurn()
         }
         
-        // Display time remaining and refresh timer if countdown has reached 0
+        // Display time remaining and refresh timer if countdown has reached 0 or user has given an answer
         Text("\(timeRemaining)")
             .onReceive(timer) { _ in
                 if timeRemaining > 0 {
                     timeRemaining -= 1
-                } else {
+                } else if timeRemaining == 0 {
                     timeRemaining = 5
                     timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
                     updateNumber()
