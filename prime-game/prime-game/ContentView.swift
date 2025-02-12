@@ -11,6 +11,7 @@ struct ContentView: View {
     // Random number generator
     @State var randomInt: Int = Int.random(in: 1...100)
     @State var answerGiven: Bool = false
+    // @State var maxAttemptsReached: Bool = false
     
     // Used for monitoring correct, incorrect results, and current attempts
     @State var correctTotal: Int = 0
@@ -21,6 +22,13 @@ struct ContentView: View {
     enum Result {
         case correct, incorrect, pending
     }
+    
+    // Used in place of Bool value due to debugging issues
+    enum MaxReached {
+        case yes, no
+    }
+    
+    @State var maxAttemptsReached: MaxReached = .no
     @State var result: Result = .pending
     @State var message: String = "" // Result displayed to the user
     
@@ -46,12 +54,13 @@ struct ContentView: View {
     // Function used to update user on their current score
     func scoreUpdate() {
         // Give score update using an overlay
-        // TO BE IMPLEMENTED
+        // displayScore()
         
         // Reset scores and current attempts to 0
         correctTotal = 0
         incorrectTotal = 0
         currentAttempts = 0
+        maxAttemptsReached = .no
         updateNumber()
     }
     
@@ -72,16 +81,21 @@ struct ContentView: View {
         currentAttempts += 1
         timeRemaining = 5
         
-        // Check is currentAttempts is equal to 10
+        // Check if currentAttempts is equal to 10
         if currentAttempts == 10 {
             scoreUpdate()
+            maxAttemptsReached = .yes
         } else {
+            maxAttemptsReached = .no
             updateNumber()
         }
     }
     
     var body: some View {
         Text(String(randomInt))
+            .foregroundColor(.gray)
+            .font(.largeTitle)
+            .padding(100)
         
         // Button used for indicating that the number is a Prime number
         Button("Prime") {
@@ -128,8 +142,27 @@ struct ContentView: View {
         case .incorrect:
             Text("❌")
         default:
-            Text("")
+            Text(" ")
         }
+        
+        switch maxAttemptsReached {
+        case .yes:
+            ZStack {
+                LinearGradient(
+                    colors: [.blue, .cyan],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+                .ignoresSafeArea()
+                
+                Text("This is a test overlay")
+                    .foregroundColor(.white)
+                    .font(.title)
+            }
+        case .no:
+            Text("Test")
+        }
+        
     }
 }
 
