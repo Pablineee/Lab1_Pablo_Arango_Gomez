@@ -11,9 +11,9 @@ struct ContentView: View {
     // Random number generator
     @State var randomInt: Int = Int.random(in: 1...100)
     @State var answerGiven: Bool = false
-    // @State var maxAttemptsReached: Bool = false
+    @State var displayOverlay: Bool = false
     
-    // Used for monitoring correct, incorrect results, and current attempts
+    // Used to monitor correct, incorrect results, and current attempts
     @State var correctTotal: Int = 0
     @State var incorrectTotal: Int = 0
     @State var currentAttempts: Int = 0
@@ -49,119 +49,146 @@ struct ContentView: View {
     // Initialize timer used to update the random number every 5 seconds
     @State var timeRemaining = 5
     @State var timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
-   
-    
-    // Function used to update user on their current score
-    func scoreUpdate() {
-        // Give score update using an overlay
-        // displayScore()
-        
-        // Reset scores and current attempts to 0
-        correctTotal = 0
-        incorrectTotal = 0
-        currentAttempts = 0
-        maxAttemptsReached = .no
-        updateNumber()
-    }
     
     // Function used to generate a new number
     func updateNumber() {
         randomInt = Int.random(in: 1...100)
         answerGiven = false
-        
-        // If turn has not been taken, increment incorrectTotal and execute takeTurn() function
-        if !answerGiven && currentAttempts != 0 {
-            incorrectTotal += 1
-            takeTurn()
-        }
     }
     
-    func takeTurn() {
+    func finishTurn() {
         // Increment currentAttempts
         currentAttempts += 1
         timeRemaining = 5
         
         // Check if currentAttempts is equal to 10
-        if currentAttempts == 10 {
-            scoreUpdate()
+        if currentAttempts >= 10 {
+            displayOverlay = true
             maxAttemptsReached = .yes
         } else {
-            maxAttemptsReached = .no
             updateNumber()
         }
+        
+    }
+    
+    // Function used to reset values and states
+    func resetGame() {
+        correctTotal = 0
+        incorrectTotal = 0
+        currentAttempts = 0
+        maxAttemptsReached = .no
+        displayOverlay = false
+        updateNumber()
     }
     
     var body: some View {
-        Text(String(randomInt))
-            .foregroundColor(.gray)
-            .font(.largeTitle)
-            .padding(100)
-        
-        // Button used for indicating that the number is a Prime number
-        Button("Prime") {
-            answerGiven = true
-            if isPrime(num: Int(randomInt)) {
-                result = .correct
-                correctTotal += 1
-            } else {
-                result = .incorrect
-                incorrectTotal += 1
-            }
-            takeTurn()
-        }
-        
-        // Button used for indicating that the number is a Prime number
-        Button("Not Prime") {
-            answerGiven = true
-            if !isPrime(num: Int(randomInt)) {
-                result = .correct
-                correctTotal += 1
-            } else {
-                result = .incorrect
-                incorrectTotal += 1
-            }
-            takeTurn()
-        }
-        
-        // Display time remaining and refresh timer if countdown has reached 0 or user has given an answer
-        Text("\(timeRemaining)")
-            .onReceive(timer) { _ in
-                if timeRemaining > 0 {
-                    timeRemaining -= 1
-                } else if timeRemaining == 0 {
-                    timeRemaining = 5
-                    timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
-                    updateNumber()
+        VStack {
+            Text(String(randomInt))
+                .foregroundColor(.gray)
+                .font(.largeTitle)
+                .padding(100)
+            
+            HStack {
+                // Button used for indicating that the number is a Prime number
+                Button(" Prime      ") {
+                    answerGiven = true
+                    if isPrime(num: Int(randomInt)) {
+                        result = .correct
+                        correctTotal += 1
+                    } else {
+                        result = .incorrect
+                        incorrectTotal += 1
+                    }
+                    finishTurn()
                 }
-            }
-        
-        // Display result based on user selection
-        switch result {
-        case .correct:
-            Text("✅")
-        case .incorrect:
-            Text("❌")
-        default:
-            Text(" ")
-        }
-        
-        switch maxAttemptsReached {
-        case .yes:
-            ZStack {
-                LinearGradient(
-                    colors: [.blue, .cyan],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
-                .ignoresSafeArea()
+                .padding(25)
+                .foregroundColor(.white)
+                .background(Color.blue)
+                .cornerRadius(8)
                 
-                Text("This is a test overlay")
-                    .foregroundColor(.white)
-                    .font(.title)
+                // Button used for indicating that the number is a Prime number
+                Button("Not Prime") {
+                    answerGiven = true
+                    if !isPrime(num: Int(randomInt)) {
+                        result = .correct
+                        correctTotal += 1
+                    } else {
+                        result = .incorrect
+                        incorrectTotal += 1
+                    }
+                    finishTurn()
+                }
+                .padding(25)
+                .foregroundColor(.white)
+                .background(Color.blue)
+                .cornerRadius(8)
+                
             }
-        case .no:
-            Text("Test")
+            
+            // Display time remaining and refresh timer if countdown has reached 0 or user has given an answer
+            Text("\(timeRemaining)")
+                .onReceive(timer) { _ in
+                    if !displayOverlay {
+                        if timeRemaining > 0 {
+                            timeRemaining -= 1
+                        } else if timeRemaining == 0 && !answerGiven {
+                            incorrectTotal += 1 // Added to ensure user is penalized for not answering
+                            finishTurn()
+                            timeRemaining = 5
+                            timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect() // Reset timer
+                            updateNumber()
+                        }
+                    }
+                }
+                .padding()
+                .foregroundColor(.gray)
+                .font(.largeTitle)
+            
+            // Display result based on user selection
+            switch result {
+            case .correct:
+                Text("✅")
+            case .incorrect:
+                Text("❌")
+            default:
+                Text(" ")
+            }
+            
+            switch maxAttemptsReached {
+            case .yes:
+                if displayOverlay {
+                    ZStack {
+                        LinearGradient(
+                            colors: [.blue, .cyan],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                        .ignoresSafeArea()
+                                        
+                        VStack {
+                            Text("Correct - \(correctTotal)")
+                                .foregroundColor(.white)
+                                .font(.title)
+                            Text("Incorrect - \(incorrectTotal)")
+                                .foregroundColor(.white)
+                                .font(.title)
+                            Text("\(correctTotal * 10)%")
+                                .foregroundColor(.white)
+                                .font(.title)
+                            Button("Restart") {
+                                resetGame()
+                            }
+                            .padding(10)
+                            .background(Color.white)
+                            .cornerRadius(8)
+                        }
+                    }
+                }
+            case .no:
+                Text(" ")
+            }
         }
+        
         
     }
 }
