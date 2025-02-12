@@ -63,6 +63,7 @@ struct ContentView: View {
         
         // Check if currentAttempts is equal to 10
         if currentAttempts >= 10 {
+            result = .pending
             displayOverlay = true
             maxAttemptsReached = .yes
         } else {
@@ -78,6 +79,7 @@ struct ContentView: View {
         currentAttempts = 0
         maxAttemptsReached = .no
         displayOverlay = false
+        result = .pending
         updateNumber()
     }
     
@@ -91,15 +93,17 @@ struct ContentView: View {
             HStack {
                 // Button used for indicating that the number is a Prime number
                 Button(" Prime      ") {
-                    answerGiven = true
-                    if isPrime(num: Int(randomInt)) {
-                        result = .correct
-                        correctTotal += 1
-                    } else {
-                        result = .incorrect
-                        incorrectTotal += 1
+                    if !displayOverlay {
+                        answerGiven = true
+                        if isPrime(num: Int(randomInt)) {
+                            result = .correct
+                            correctTotal += 1
+                        } else {
+                            result = .incorrect
+                            incorrectTotal += 1
+                        }
+                        finishTurn()
                     }
-                    finishTurn()
                 }
                 .padding(25)
                 .foregroundColor(.white)
@@ -108,15 +112,17 @@ struct ContentView: View {
                 
                 // Button used for indicating that the number is a Prime number
                 Button("Not Prime") {
-                    answerGiven = true
-                    if !isPrime(num: Int(randomInt)) {
-                        result = .correct
-                        correctTotal += 1
-                    } else {
-                        result = .incorrect
-                        incorrectTotal += 1
+                    if !displayOverlay {
+                        answerGiven = true
+                        if !isPrime(num: Int(randomInt)) {
+                            result = .correct
+                            correctTotal += 1
+                        } else {
+                            result = .incorrect
+                            incorrectTotal += 1
+                        }
+                        finishTurn()
                     }
-                    finishTurn()
                 }
                 .padding(25)
                 .foregroundColor(.white)
