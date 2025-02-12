@@ -84,85 +84,96 @@ struct ContentView: View {
     }
     
     var body: some View {
-        VStack {
-            Text(String(randomInt))
-                .foregroundColor(.gray)
-                .font(.largeTitle)
-                .padding(100)
-            
-            HStack {
-                // Button used for indicating that the number is a Prime number
-                Button(" Prime      ") {
-                    if !displayOverlay {
-                        answerGiven = true
-                        if isPrime(num: Int(randomInt)) {
-                            result = .correct
-                            correctTotal += 1
-                        } else {
-                            result = .incorrect
-                            incorrectTotal += 1
-                        }
-                        finishTurn()
-                    }
-                }
-                .padding(25)
-                .foregroundColor(.white)
-                .background(Color.blue)
-                .cornerRadius(8)
+        ZStack { // Added a ZStack to allow overlay to utilize the entire screen
+            VStack {
+                Text(String(randomInt))
+                    .foregroundColor(.gray)
+                    .font(.system(size: 60))
+                    .padding(100)
                 
-                // Button used for indicating that the number is a Prime number
-                Button("Not Prime") {
-                    if !displayOverlay {
-                        answerGiven = true
-                        if !isPrime(num: Int(randomInt)) {
-                            result = .correct
-                            correctTotal += 1
-                        } else {
-                            result = .incorrect
-                            incorrectTotal += 1
-                        }
-                        finishTurn()
-                    }
-                }
-                .padding(25)
-                .foregroundColor(.white)
-                .background(Color.blue)
-                .cornerRadius(8)
-                
-            }
-            
-            // Display time remaining and refresh timer if countdown has reached 0 or user has given an answer
-            Text("\(timeRemaining)")
-                .onReceive(timer) { _ in
-                    if !displayOverlay {
-                        if timeRemaining > 0 {
-                            timeRemaining -= 1
-                        } else if timeRemaining == 0 && !answerGiven {
-                            incorrectTotal += 1 // Added to ensure user is penalized for not answering
+                VStack {
+                    // Button used for indicating that the number is a Prime number
+                    Button(" Prime       ") {
+                        if !displayOverlay {
+                            answerGiven = true
+                            if isPrime(num: Int(randomInt)) {
+                                result = .correct
+                                correctTotal += 1
+                            } else {
+                                result = .incorrect
+                                incorrectTotal += 1
+                            }
                             finishTurn()
-                            timeRemaining = 5
-                            timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect() // Reset timer
-                            updateNumber()
                         }
                     }
+                    .padding(20)
+                    .foregroundColor(.white)
+                    .background(Color.blue)
+                    .cornerRadius(8)
+                    .font(.largeTitle)
+                    
+                    // Button used for indicating that the number is a Prime number
+                    Button("Not Prime") {
+                        if !displayOverlay {
+                            answerGiven = true
+                            if !isPrime(num: Int(randomInt)) {
+                                result = .correct
+                                correctTotal += 1
+                            } else {
+                                result = .incorrect
+                                incorrectTotal += 1
+                            }
+                            finishTurn()
+                        }
+                    }
+                    .padding(20)
+                    .foregroundColor(.white)
+                    .background(Color.blue)
+                    .cornerRadius(8)
+                    .font(.largeTitle)
+                    
                 }
-                .padding()
-                .foregroundColor(.gray)
-                .font(.largeTitle)
-            
-            // Display result based on user selection
-            switch result {
-            case .correct:
-                Text("✅")
-            case .incorrect:
-                Text("❌")
-            default:
-                Text(" ")
+                
+                // Display time remaining and refresh timer if countdown has reached 0 or user has given an answer
+                Text("\(timeRemaining)")
+                    .onReceive(timer) { _ in
+                        if !displayOverlay {
+                            if timeRemaining > 0 {
+                                timeRemaining -= 1
+                            } else if timeRemaining == 0 && !answerGiven {
+                                incorrectTotal += 1 // Added to ensure user is penalized for not answering
+                                finishTurn()
+                                timeRemaining = 5
+                                timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect() // Reset timer
+                                updateNumber()
+                            }
+                        }
+                    }
+                    .padding()
+                    .foregroundColor(.gray)
+                    .font(.largeTitle)
+                
+                // Display result based on user selection
+                switch result {
+                case .correct:
+                    Text("✅")
+                        .font(.system(size: 75))
+                        .padding(30)
+                case .incorrect:
+                    Text("❌")
+                        .font(.system(size: 75))
+                        .padding(30)
+                default:
+                    Text(" ")
+                        .font(.system(size: 75))
+                        .padding(30)
+                }
             }
             
             switch maxAttemptsReached {
             case .yes:
                 if displayOverlay {
+                    // Display overlay outlining the player's statistics over the last 10 numbers
                     ZStack {
                         LinearGradient(
                             colors: [.blue, .cyan],
@@ -174,17 +185,20 @@ struct ContentView: View {
                         VStack {
                             Text("Correct - \(correctTotal)")
                                 .foregroundColor(.white)
+                                .padding(5)
                                 .font(.title)
                             Text("Incorrect - \(incorrectTotal)")
                                 .foregroundColor(.white)
+                                .padding(5)
                                 .font(.title)
                             Text("\(correctTotal * 10)%")
                                 .foregroundColor(.white)
-                                .font(.title)
+                                .font(.system(size: 60))
                             Button("Restart") {
                                 resetGame()
                             }
-                            .padding(10)
+                            .padding(30)
+                            .font(.system(size: 50))
                             .background(Color.white)
                             .cornerRadius(8)
                         }
@@ -194,8 +208,6 @@ struct ContentView: View {
                 Text(" ")
             }
         }
-        
-        
     }
 }
 
